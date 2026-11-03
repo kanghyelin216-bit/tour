@@ -1,8 +1,7 @@
-// src/App.jsx
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createRoot } from 'react-dom/client';
 import { ref, get, set } from 'firebase/database';
-import { db } from './firebase';
-import './App.css';
+import { db } from './firebase.js'; // 확장자 필수
 
 // 공공데이터포털 디코딩된 서비스 키 적용
 const TOUR_API_KEY = "ec3f7ef297eb3f592b66a248f3cdfc87a34e5e89a4950965a1d1c484fd6d6423";
@@ -38,8 +37,8 @@ function App() {
   // 2. 공공데이터포털 관광정보 API 호출
   const fetchTourData = async (areaCode) => {
     setLoading(true);
-    // 한국관광공사 국문 관광정보 서비스 - 지역기반 관광정보 조회
-    const url = `http://apis.data.go.kr/B551011/KorService2/areaBasedList2?serviceKey=${TOUR_API_KEY}&numOfRows=12&pageNo=1&MobileOS=ETC&MobileApp=TourApp&_type=json&arrange=A&contentTypeId=12&areaCode=${areaCode}`;
+    // http -> https 로 반드시 변경해야 깃허브 페이지에서 차단되지 않음
+    const url = `https://apis.data.go.kr/B551011/KorService2/areaBasedList2?serviceKey=${TOUR_API_KEY}&numOfRows=12&pageNo=1&MobileOS=ETC&MobileApp=TourApp&_type=json&arrange=A&contentTypeId=12&areaCode=${areaCode}`;
 
     try {
       const response = await fetch(url);
@@ -104,7 +103,7 @@ function App() {
     </div>
   );
 }
+
 // 빌드 환경이 아니므로 파일 하단에서 React 앱을 HTML의 root에 직접 마운트합니다.
 const root = createRoot(document.getElementById('root'));
 root.render(<App />);
-
