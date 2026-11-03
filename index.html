@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>지역별 여행지 카드북</title>
+  
+  <!-- CSS 연결 -->
+  <link rel="stylesheet" href="./App.css">
+  
+  <!-- Import Map: 브라우저가 import 'react' 같은 모듈 이름을 해석할 수 있도록 주소 매핑 -->
+  <script type="importmap">
+    {
+      "imports": {
+        "react": "https://esm.sh/react@18.2.0",
+        "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+        "firebase/app": "https://esm.sh/firebase@10.12.0/app",
+        "firebase/database": "https://esm.sh/firebase@10.12.0/database"
+      }
+    }
+  </script>
+
+  <!-- Babel: 브라우저가 App.jsx의 JSX 문법을 실시간으로 읽을 수 있게 변환 -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <!-- React 앱이 그려질 도화지 -->
+  <div id="root"></div>
+  
+  <!-- App.jsx를 모듈로서 불러와서 실행 -->
+  <script type="text/babel" data-type="module" src="./App.jsx"></script>
+</body>
+</html>
