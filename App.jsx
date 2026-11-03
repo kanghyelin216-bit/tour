@@ -104,5 +104,7 @@ function App() {
     </div>
   );
 }
+// 빌드 환경이 아니므로 파일 하단에서 React 앱을 HTML의 root에 직접 마운트합니다.
+const root = createRoot(document.getElementById('root'));
+root.render(<App />);
 
-export default App;
