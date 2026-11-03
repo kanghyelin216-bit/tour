@@ -39,7 +39,7 @@ function App() {
   const fetchTourData = async (areaCode) => {
     setLoading(true);
     // 한국관광공사 국문 관광정보 서비스 - 지역기반 관광정보 조회
-    const url = `https://apis.data.go.kr/B551011/KorService1/areaBasedList1?serviceKey=${TOUR_API_KEY}&numOfRows=12&pageNo=1&MobileOS=ETC&MobileApp=TourApp&_type=json&arrange=A&contentTypeId=12&areaCode=${areaCode}`;
+    const url = `http://apis.data.go.kr/B551011/KorService2/areaBasedList2?serviceKey=${TOUR_API_KEY}&numOfRows=12&pageNo=1&MobileOS=ETC&MobileApp=TourApp&_type=json&arrange=A&contentTypeId=12&areaCode=${areaCode}`;
 
     try {
       const response = await fetch(url);
