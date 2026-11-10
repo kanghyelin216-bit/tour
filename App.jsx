@@ -9,7 +9,7 @@ function App() {
   const [selectedRegion, setSelectedRegion] = useState('');
 
   // 공공데이터포털 디코딩(일반) API 키 (반드시 본인 키로 변경)
-  const API_KEY = '본인의_공공데이터포털_디코딩_API_키'; 
+  const API_KEY = 'ec3f7ef297eb3f592b66a248f3cdfc87a34e5e89a4950965a1d1c484fd6d6423'; 
 
   const regions = [
     { code: '1', name: '서울' }, { code: '2', name: '인천' },
