@@ -128,3 +128,72 @@ body {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* 컨트롤 패널 (선택창과 보관함 버튼을 나란히) */
+.control-panel {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* 보관함 토글 버튼 */
+.wishlist-toggle-btn {
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-weight: 700;
+  color: #ff6b81;
+  background-color: white;
+  border: 2px solid #ff6b81;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+}
+
+.wishlist-toggle-btn:hover {
+  background-color: #ffeef0;
+}
+
+.wishlist-toggle-btn.active {
+  background-color: #ff6b81;
+  color: white;
+}
+
+/* 카드 내 하트 아이콘 위치 설정을 위해 부모 카드에 relative 추가 */
+.card {
+  position: relative;
+}
+
+/* 하트 아이콘 스타일 */
+.heart-icon {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  font-size: 1.8rem;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  transition: transform 0.2s ease;
+  z-index: 10;
+}
+
+.heart-icon:hover {
+  transform: scale(1.15);
+}
+
+/* 데이터 없을 때 안내 문구 */
+.empty-state {
+  text-align: center;
+  padding: 50px;
+  color: #7f8c8d;
+  font-size: 1.2rem;
+}

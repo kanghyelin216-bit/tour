@@ -1,3 +1,4 @@
+// src/App.jsx
 import { useState, useEffect } from 'react';
 import { database } from './firebase';
 import { ref, set, get, child } from 'firebase/database';
@@ -7,6 +8,10 @@ import './App.css';
 function App() {
   const [places, setPlaces] = useState([]);
   const [selectedRegion, setSelectedRegion] = useState('');
+  
+  // 보관함(찜) 관련 상태 추가
+  const [wishlist, setWishlist] = useState({}); // 찜한 여행지 목록 (객체 형태)
+  const [showWishlist, setShowWishlist] = useState(false); // 보관함 보기 여부
 
   const API_KEY = 'ec3f7ef297eb3f592b66a248f3cdfc87a34e5e89a4950965a1d1c484fd6d6423'; 
 
@@ -22,13 +27,21 @@ function App() {
     { code: '39', name: '제주도' }
   ];
 
+  // 1. 처음 화면 켤 때 마지막 지역 및 보관함(Wishlist) 데이터 가져오기
   useEffect(() => {
     const dbRef = ref(database);
-    get(child(dbRef, `userPreferences/lastRegion`)).then((snapshot) => {
+    get(child(dbRef, `userPreferences`)).then((snapshot) => {
       if (snapshot.exists()) {
-        const savedRegionCode = snapshot.val();
-        setSelectedRegion(savedRegionCode);
-        fetchTourismData(savedRegionCode);
+        const data = snapshot.val();
+        // 찜 목록 불러오기
+        if (data.wishlist) {
+          setWishlist(data.wishlist);
+        }
+        // 마지막 지역 불러오기
+        if (data.lastRegion) {
+          setSelectedRegion(data.lastRegion);
+          fetchTourismData(data.lastRegion);
+        }
       }
     });
   }, []);
@@ -36,7 +49,6 @@ function App() {
   const fetchTourismData = async (areaCode) => {
     try {
       const url = `https://apis.data.go.kr/B551011/KorService2/areaBasedList2?serviceKey=${API_KEY}&numOfRows=60&pageNo=1&MobileOS=ETC&MobileApp=CardBookApp&_type=json&areaCode=${areaCode}&arrange=P`;
-      
       const response = await axios.get(url);
       
       if (response.data.response && response.data.response.body && response.data.response.body.items) {
@@ -56,8 +68,29 @@ function App() {
 
     setSelectedRegion(newRegionCode);
     set(ref(database, 'userPreferences/lastRegion'), newRegionCode);
+    
+    // 지역을 바꾸면 자동으로 보관함 모드를 끄고 전체 목록을 보여줌
+    setShowWishlist(false);
     fetchTourismData(newRegionCode);
   };
+
+  // 2. 찜하기 / 찜 취소 토글 함수
+  const toggleWishlist = (place) => {
+    const newWishlist = { ...wishlist };
+    // 이미 찜한 곳이면 제거, 아니면 추가 (고유 ID인 contentid 기준)
+    if (newWishlist[place.contentid]) {
+      delete newWishlist[place.contentid];
+    } else {
+      newWishlist[place.contentid] = place;
+    }
+    
+    setWishlist(newWishlist);
+    // Firebase에 찜 목록 전체 업데이트
+    set(ref(database, 'userPreferences/wishlist'), newWishlist);
+  };
+
+  // 화면에 그려줄 데이터 결정 (보관함 모드면 찜한 목록, 아니면 API 호출 목록)
+  const displayPlaces = showWishlist ? Object.values(wishlist) : places;
 
   return (
     <div className="App">
@@ -65,31 +98,54 @@ function App() {
         <h1>✈️ 여행지 카드북</h1>
         <p>훌쩍 떠나고 싶은 지역을 선택해보세요</p>
         
-        <select className="region-select" value={selectedRegion} onChange={handleRegionChange}>
-          <option value="">🗺️ 지역 선택하기</option>
-          {regions.map(region => (
-            <option key={region.code} value={region.code}>
-              {region.name}
-            </option>
-          ))}
-        </select>
+        <div className="control-panel">
+          <select className="region-select" value={selectedRegion} onChange={handleRegionChange}>
+            <option value="">🗺️ 지역 선택하기</option>
+            {regions.map(region => (
+              <option key={region.code} value={region.code}>
+                {region.name}
+              </option>
+            ))}
+          </select>
+          
+          {/* 보관함 토글 버튼 */}
+          <button 
+            className={`wishlist-toggle-btn ${showWishlist ? 'active' : ''}`}
+            onClick={() => setShowWishlist(!showWishlist)}
+          >
+            {showWishlist ? '🗺️ 지역 전체 보기' : `❤️ 내 보관함 (${Object.keys(wishlist).length})`}
+          </button>
+        </div>
       </header>
 
-      {places.length > 0 && (
+      {displayPlaces.length > 0 ? (
         <div className="card-grid">
-          {places.map((place, index) => (
-            <div key={index} className="card">
-              {place.firstimage ? (
-                <img src={place.firstimage} alt={place.title} className="card-image" />
-              ) : (
-                <div className="no-image">📷 이미지 준비중</div>
-              )}
-              <div className="card-content">
-                <h3>{place.title}</h3>
-                <p>{place.addr1}</p>
+          {displayPlaces.map((place, index) => {
+            const isWished = !!wishlist[place.contentid]; // 찜 여부 확인
+
+            return (
+              <div key={place.contentid || index} className="card">
+                {/* 하트 아이콘 */}
+                <div className="heart-icon" onClick={() => toggleWishlist(place)}>
+                  {isWished ? '❤️' : '🤍'}
+                </div>
+
+                {place.firstimage ? (
+                  <img src={place.firstimage} alt={place.title} className="card-image" />
+                ) : (
+                  <div className="no-image">📷 이미지 준비중</div>
+                )}
+                <div className="card-content">
+                  <h3>{place.title}</h3>
+                  <p>{place.addr1}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
+        </div>
+      ) : (
+        <div className="empty-state">
+          {showWishlist ? '보관함이 비어있습니다. 하트를 눌러 추가해보세요!' : '데이터를 불러오는 중이거나 없습니다.'}
         </div>
       )}
     </div>
