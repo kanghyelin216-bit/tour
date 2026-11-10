@@ -1,115 +1,103 @@
-import React, { useState, useEffect } from 'react';
-import { createRoot } from 'react-dom/client';
-import { ref, get, set } from 'firebase/database';
-import { db } from './firebase.js';
-
-const TOUR_API_KEY = "ec3f7ef297eb3f592b66a248f3cdfc87a34e5e89a4950965a1d1c484fd6d6423";
-
-// 전국 17개 시/도 지역 코드 전체 추가
-const REGIONS = [
-  { code: '1', name: '서울' },
-  { code: '2', name: '인천' },
-  { code: '3', name: '대전' },
-  { code: '4', name: '대구' },
-  { code: '5', name: '광주' },
-  { code: '6', name: '부산' },
-  { code: '7', name: '울산' },
-  { code: '8', name: '세종' },
-  { code: '31', name: '경기' },
-  { code: '32', name: '강원' },
-  { code: '33', name: '충북' },
-  { code: '34', name: '충남' },
-  { code: '35', name: '경북' },
-  { code: '36', name: '경남' },
-  { code: '37', name: '전북' },
-  { code: '38', name: '전남' },
-  { code: '39', name: '제주' }
-];
+import { useState, useEffect } from 'react';
+import { database } from './firebase';
+import { ref, set, get, child } from 'firebase/database';
+import axios from 'axios';
+import './App.css'; // 기본 스타일링 (카드 그리드 등 설정 필요)
 
 function App() {
   const [places, setPlaces] = useState([]);
-  const [selectedRegion, setSelectedRegion] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [selectedRegion, setSelectedRegion] = useState('');
 
+  // 공공데이터포털 디코딩(일반) API 키 (반드시 본인 키로 변경)
+  const API_KEY = '본인의_공공데이터포털_디코딩_API_키'; 
+
+  const regions = [
+    { code: '1', name: '서울' }, { code: '2', name: '인천' },
+    { code: '6', name: '부산' }, { code: '31', name: '경기도' },
+    { code: '32', name: '강원도' }, { code: '39', name: '제주도' }
+  ];
+
+  // 1. 처음 화면을 켤 때 Firebase에서 마지막 선택 지역 가져오기
   useEffect(() => {
-    const fetchSavedRegion = async () => {
-      const regionRef = ref(db, 'userActivity/lastRegion');
-      const snapshot = await get(regionRef);
-      
+    const dbRef = ref(database);
+    get(child(dbRef, `userPreferences/lastRegion`)).then((snapshot) => {
       if (snapshot.exists()) {
         const savedRegionCode = snapshot.val();
         setSelectedRegion(savedRegionCode);
-        fetchTourData(savedRegionCode);
+        fetchTourismData(savedRegionCode); // 저장된 지역이 있으면 바로 API 호출
       }
-    };
-    fetchSavedRegion();
+    });
   }, []);
 
-  const fetchTourData = async (areaCode) => {
-    setLoading(true);
-    const url = `https://apis.data.go.kr/B551011/KorService2/areaBasedList2?serviceKey=${TOUR_API_KEY}&numOfRows=12&pageNo=1&MobileOS=ETC&MobileApp=TourApp&_type=json&arrange=A&contentTypeId=12&areaCode=${areaCode}`;
-
+  // 2. 관광정보 API 호출 함수
+  const fetchTourismData = async (areaCode) => {
     try {
-      const response = await fetch(url);
-      const data = await response.json();
-      const items = data.response.body.items.item || [];
+      const url = `https://apis.data.go.kr/B551011/KorService1/areaBasedList1`;
+      const response = await axios.get(url, {
+        params: {
+          serviceKey: API_KEY,
+          numOfRows: 12,
+          pageNo: 1,
+          MobileOS: 'ETC',
+          MobileApp: 'CardBookApp',
+          _type: 'json',
+          areaCode: areaCode,
+          arrange: 'A'
+        }
+      });
+      const items = response.data.response.body.items.item || [];
       setPlaces(items);
     } catch (error) {
       console.error("API 호출 에러:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
-  const handleRegionChange = async (e) => {
+  // 3. 지역을 변경했을 때 실행되는 함수
+  const handleRegionChange = (e) => {
     const newRegionCode = e.target.value;
     if (!newRegionCode) return;
 
     setSelectedRegion(newRegionCode);
-    fetchTourData(newRegionCode);
-    await set(ref(db, 'userActivity/lastRegion'), newRegionCode);
+    
+    // 선택한 지역을 Firebase에 업데이트
+    set(ref(database, 'userPreferences/lastRegion'), newRegionCode);
+    
+    // 새 지역으로 API 다시 호출
+    fetchTourismData(newRegionCode);
   };
 
   return (
-    <div className="container">
-      <h1>🗺️ 지역별 여행지 카드북</h1>
+    <div className="App">
+      <h1>지역별 여행지 카드북</h1>
       
-      <div className="selector">
-        <select value={selectedRegion || ""} onChange={handleRegionChange}>
-          <option value="" disabled>지역을 선택하세요</option>
-          {REGIONS.map((region) => (
-            <option key={region.code} value={region.code}>
-              {region.name}
-            </option>
+      {/* 지역 선택 드롭다운 */}
+      <select value={selectedRegion} onChange={handleRegionChange}>
+        <option value="">지역을 선택하세요</option>
+        {regions.map(region => (
+          <option key={region.code} value={region.code}>
+            {region.name}
+          </option>
+        ))}
+      </select>
+
+      {/* 불러온 데이터가 있을 때만 시각화된 목록 뷰 표출 */}
+      {places.length > 0 && (
+        <div className="card-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+          {places.map((place, index) => (
+            <div key={index} className="card" style={{ border: '1px solid #ddd', padding: '10px' }}>
+              {place.firstimage ? (
+                <img src={place.firstimage} alt={place.title} style={{ width: '100%', height: '200px', objectFit: 'cover' }} />
+              ) : (
+                <div style={{ width: '100%', height: '200px', backgroundColor: '#eee', textAlign: 'center', lineHeight: '200px' }}>이미지 없음</div>
+              )}
+              <h3>{place.title}</h3>
+              <p>{place.addr1}</p>
+            </div>
           ))}
-        </select>
-      </div>
-
-      {loading && <p className="loading">데이터를 불러오는 중입니다...</p>}
-
-      {!loading && places.length > 0 && (
-        <div className="card-grid">
-          {places.map((place, index) => {
-            // Mixed Content 에러 방지를 위해 http를 https로 변환
-            const imageUrl = place.firstimage 
-              ? place.firstimage.replace('http://', 'https://') 
-              : 'https://via.placeholder.com/300x200?text=No+Image';
-
-            return (
-              <div className="card" key={index}>
-                <img src={imageUrl} alt={place.title} />
-                <div className="card-info">
-                  <h3>{place.title}</h3>
-                  <p>{place.addr1}</p>
-                </div>
-              </div>
-            );
-          })}
         </div>
       )}
     </div>
   );
 }
 
-const root = createRoot(document.getElementById('root'));
-root.render(<App />);
+export default App;
