@@ -1,0 +1,130 @@
+/* Google Fonts 불러오기 */
+@import url('https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+body {
+  margin: 0;
+  background-color: #f4f6f8; /* 차분한 배경색 */
+}
+
+.App {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: #333;
+}
+
+/* 헤더 스타일링 */
+.app-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.app-header h1 {
+  font-family: 'Gowun Dodum', sans-serif;
+  font-size: 2.8rem;
+  color: #2c3e50;
+  margin: 0 0 10px 0;
+}
+
+.app-header p {
+  color: #7f8c8d;
+  font-size: 1.1rem;
+  margin-bottom: 30px;
+}
+
+/* 드롭다운(선택창) 스타일링 */
+.region-select {
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-weight: 500;
+  color: #333;
+  background-color: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 30px;
+  outline: none;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+  min-width: 200px;
+}
+
+.region-select:hover, .region-select:focus {
+  border-color: #3498db;
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.15);
+}
+
+/* 카드 그리드 정렬 */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+  padding: 10px;
+}
+
+/* 카드 디자인 */
+.card {
+  background-color: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+/* 카드 마우스 호버(올렸을 때) 애니메이션 */
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 30px rgba(0,0,0,0.12);
+}
+
+/* 카드 이미지 */
+.card-image {
+  width: 100%;
+  height: 220px;
+  object-fit: cover; /* 이미지가 찌그러지지 않게 채움 */
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* 이미지 없을 때 대체 박스 */
+.no-image {
+  width: 100%;
+  height: 220px;
+  background-color: #e9ecef;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #adb5bd;
+  font-family: 'Gowun Dodum', sans-serif;
+  font-size: 1.1rem;
+}
+
+/* 카드 하단 텍스트 영역 */
+.card-content {
+  padding: 20px;
+  text-align: left;
+}
+
+.card-content h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.2rem;
+  color: #2d3436;
+  font-weight: 700;
+  /* 제목이 너무 길면 말줄임표(...) 처리 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-content p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #636e72;
+  line-height: 1.5;
+  /* 주소가 두 줄 넘어가면 말줄임표 처리 */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
